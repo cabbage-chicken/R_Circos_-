@@ -1,0 +1,103 @@
+setwd("E:/R_files/Circos/Circos1.1")                    #工作目录
+par(mar = c(0,0,0,0))                                   #绘图边框
+library(circlize)
+Lk = read.table(file = "Data.txt", header = TRUE)       #读取数据
+TScore = c(rep(0,10))
+for (i in 1:5){
+  TScore[i] = sum(Lk[i,6:10])
+}
+for (i in 6:10){
+  TScore[i] = sum(Lk[i,1:5])
+}                                                       #计算每个人的总分，作为sector大小的数据
+
+circos.par(gap.after = c(3,3,3,3,10,3,3,3,3,10),
+           clock.wise = FALSE,
+           start.degree = 180)                           #间隙，圈的方向，起始角度
+
+Celb = c("纶纶", "晗晗", "飞飞", "明明",
+         "坤坤", "莫莫", "白白", 
+         "露露", "苍苍", "冰冰")                          #Celb向量为人名
+Lable = data.frame(Ch = factor(Celb, 
+                               levels = Celb),
+                   hour = TScore)
+Color = c("red2","orangered2", "orange", "goldenrod1", "olivedrab2",
+          "green3", "springgreen","steelblue2", "hotpink1","darkorchid1")
+
+circos.initialize(factor(Lable$Ch), xlim = cbind(rep(0, 10), TScore))
+circos.track(ylim = c(0, 1), panel.fun = function(x, y) {
+  circos.text(CELL_META$xcenter, CELL_META$ycenter, CELL_META$sector.index, 
+              facing = "bending.outside",niceFacing = TRUE, cex = 0.7)
+}, bg.border = NA, track.height = 0.2)
+
+
+circos.track(factor(Lable$Ch), ylim = c(0,1), bg.col = Color, 
+             bg.border = NA, track.height = 0.1)
+for (i in 1:10){
+  
+  circos.axis(h = "top", major.at = NULL, labels.cex = 0.6, 
+              col = Color[i], labels.col = Color[i],
+              sector.index =Celb[i] )
+  
+}
+
+Temp1 = c(rep(0,5))
+X = c(0,0) # j  for the column name.X femal get score
+for (j in 1:5){
+  for (i in 6:10){
+    V = c(Temp1[i-5], Temp1[i-5] + Lk[i,j])
+    Temp1[i-5] = Temp1[i-5] + Lk[i,j]
+    X = cbind(X,V)
+  }
+}
+Temp2 = 0
+Y = vector(length = 2)
+for (i in 1:5){
+  for (j in 6:10){
+    V = c(Temp2, Temp2 + Lk[i,j])
+    Temp2 = Temp2+Lk[i,j]
+    Y = cbind(Y,V)
+  }
+  Temp2 = 0
+}
+k =1
+for (i in 1:5){
+  for (j in 6:10){
+    if (((Lk[i,j] >30) & (Lk[j,i] < 15)) | ((Lk[i,j] < 15) & (Lk[j,i] > 30))){
+      if (Lk[i,j] > Lk[j,i]){
+      circos.link(Lable$Ch[i], Y[,k+1] ,Lable$Ch[j], X[,k+1], 
+                  directional = -1, arr.type = "big.arrow", arr.length = 0.07,
+                  col = rand_color(n = 1,
+                                   transparency = 0.1))
+      }else{
+        circos.link(Lable$Ch[i], Y[,k+1] ,Lable$Ch[j], X[,k+1], 
+                    directional = 1, arr.type = "big.arrow", arr.length = 0.07,
+                    col = rand_color(n = 1,
+                                     transparency = 0.1))
+      }
+        }
+    k= k+1
+  }
+} 
+
+
+#Data.txt
+#纶纶	晗晗	飞飞	明明	坤坤	莫莫	白白	露露	苍苍	冰冰
+#NA	NA	NA	NA	NA	11 	10 	8 	36 	9 
+#NA	NA	NA	NA	NA	21 	16 	42 	14 	20 
+#NA	NA	NA	NA	NA	27 	26 	19 	6 	6 
+#NA	NA	NA	NA	NA	5 	42 	22 	28 	33 
+#NA	NA	NA	NA	NA	37 	15 	10 	14 	27 
+#44 	13 	22 	13 	14 	NA 	NA 	NA 	NA 	NA 
+#23 	24 	33 	48 	37 	NA 	NA 	NA 	NA 	NA 
+#12 	18 	25 	24 	21 	NA 	NA 	NA 	NA 	NA 
+#13 	8 	18 	15 	46 	NA 	NA 	NA 	NA 	NA 
+#25 	28 	12 	24 	9 	NA 	NA 	NA 	NA 	NA 
+
+
+#（请先将Data.txt的数据去掉“#”后放在一个txt文件中，将其命名为"Data")
+										
+										
+										
+										
+										
+										
